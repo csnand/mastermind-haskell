@@ -25,7 +25,7 @@ type Code = [Symbol]
 -- | Guesses are scored using coloured and white markers. The first component
 -- of the pair gives the number of coloured markers and the right component
 -- gives the number of white markers.
-type Score = (Int, Int) 
+type Score = (Int, Int)
 
 -- | A player is either human or computer-controlled.
 data Player = Human | Computer
@@ -42,7 +42,7 @@ firstGuess = "aabb"
 
 -- | Determines whether a score indicates that a guess was correct or not.
 ------------------------------------
--- [Your explanation]
+--
 correctGuess :: Score -> Bool
 correctGuess score = (fst score) == pegs && (snd score) == 0
 
@@ -75,30 +75,10 @@ results = do
 ------------------------------------
 -- [Your explanation]
 score :: Code -> Code -> Score
-score code guess = (a, b)
-    where b = scoreWhite code guess
-          a = scoreColoured code guess
-
-
-scoreColoured :: Code -> Code -> Int
-scoreColoured c g = length $ filter (\(a,b) -> a == b) $ zip c g 
-
-
-scoreWhite :: Code -> Code -> Int
-scoreWhite c g = countWhite $ unzip $ filter (\(a,b) -> a /= b) $ zip c g
-
-countWhite :: (Code,Code) -> Int
-countWhite (a,b) = count a b
-
-count :: Code -> Code -> Int
-count [] _ = 0
-count _ [] = 0
-count c (g:gs) = if g `elem` c then 1 + count c gs else count c gs
---    where x = filter (/= g) gs
-
-unique :: Code -> Code
-unique [] = []
-unique (x:xs) = x : unique (dropWhile(==x) xs )
+score code guess = (coloured, white)
+    where coloured = length [1 | (x,y) <- zip code guess, x==y]
+          notFound = code \\ guess
+          white = length code - length notFound - coloured
 
 
 -- | Chooses the next guess. If there is only one option left, choose it.
@@ -109,20 +89,12 @@ unique (x:xs) = x : unique (dropWhile(==x) xs )
 nextGuess :: [Code] -> Code
 nextGuess (s:ss)
     | length (s:ss) == 1 = s
-    | otherwise = (snd .  maximum) $ countAllEliminate (s:ss)
+    | otherwise = (snd . minimum ) $ countAllEliminate (s:ss) codes
 
 
-countAllEliminate :: [Code] -> [(Int, Code)]
-countAllEliminate [] = []
-countAllEliminate (c:cs) = minimum [ (countEliminate r c, c) | r <- results] : countAllEliminate cs
-
-
-
-
-countEliminate :: Score -> Code -> Int
-countEliminate _ [] = 0
-countEliminate s c = length $ eliminate s c codes
-
+countAllEliminate :: [Code] -> [Code]-> [(Int, Code)]
+countAllEliminate _ [] = []
+countAllEliminate c (x:xs) = maximum [ (length $ eliminate r x c, x) | r <- results] : countAllEliminate c xs
 
 -- | Remove all codes from the remaining possibilities which would result in
 -- a different score for the guess if they were the code.
