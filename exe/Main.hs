@@ -16,6 +16,7 @@ import System.Random
 
 import Text.Printf                  (printf)
 
+import Data.Emoji
 import Game
 
 --------------------------------------------------------------------------------
@@ -56,7 +57,8 @@ compLoop n code guess s
     | code == guess = do
         printf "%d. The computer guessed correctly (%s)!\n" n guess
     | otherwise     = do
-        printf "%d. The computer guessed incorrectly (%s)!\n" n guess
+        printf "%d. The computer guessed incorrectly (%s)!  " n guess
+        showEmoji $ emoji $ score code guess
         let s' = eliminate (score code guess) guess s
         compLoop (n+1) code (nextGuess s') s'
 
@@ -76,7 +78,8 @@ humanLoop code n = do
     if correctGuess s
     then printf "Correct after %d guesses!\n" n
     else do
-        printf "Incorrect (%d coloured, %d white)!\n" (fst s) (snd s)
+        printf "Incorrect (%d coloured, %d white)! " (fst s) (snd s)
+        showEmoji $ emoji s
         humanLoop code (n+1)
 
 -- | The human and AI take turns as codemaker.
@@ -84,11 +87,36 @@ takeTurns :: Player -> IO ()
 takeTurns Human    = humanTurn >> takeTurns Computer
 takeTurns Computer = compTurn  >> takeTurns Human
 
+emoji :: Score -> [Maybe String] 
+emoji (a,b) = replicate a (unicodeByName "black_circle") ++ replicate b (unicodeByName "white_circle") 
+
+showEmoji :: [Maybe String] -> IO ()
+showEmoji (x:xs) = do
+                   mapM_ putStr x
+                   if length(xs) == 0 then putStrLn " "
+                   else showEmoji xs
+
+
+
+chooseRole :: String -> Player
+chooseRole str = if str == "1" then Human else Computer
+
+getInput :: IO Player
+getInput = do 
+           putStrLn "Please choose role (1 for codemaker, 2 for codebreaker)"
+           input <- map toLower <$> getLine
+           if input `elem` ["1", "2"] then return $  chooseRole input
+           else do
+                putStrLn "Invalid Input"
+                getInput
+
+
 -- | The main entry point for this program.
 main :: IO ()
 main = do
     hSetBuffering stdout NoBuffering
     hSetBuffering stdin  NoBuffering
-    takeTurns codemaker
+    role <- getInput
+    takeTurns role
 
 --------------------------------------------------------------------------------

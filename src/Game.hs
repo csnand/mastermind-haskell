@@ -64,10 +64,7 @@ codes = filter validateCode $ sequence $ replicate pegs symbols
 ------------------------------------
 -- [Your explanation]
 results :: [Score]
-results = do
-          p <- [0..pegs]
-          q <- [0..pegs-p]
-          filter(\(a,b) -> a /= pegs -1 || b /= 1) [(p,q)]
+results = filter(\(a,b) -> a /= pegs -1 || b /= 1) [(p,q) | p <- [0..pegs], q <- [0..pegs-p] ]
 
 -- | Scores a guess against a code. Symbols which are in the right place
 -- and of the right type score a coloured marker. Symbols which are of the
@@ -89,7 +86,7 @@ score code guess = (coloured, white)
 nextGuess :: [Code] -> Code
 nextGuess (s:ss)
     | length (s:ss) == 1 = s
-    | otherwise = (snd . minimum ) $ countAllEliminate (s:ss) codes
+    | otherwise = (snd . minimum) $ countAllEliminate (s:ss) codes
 
 
 countAllEliminate :: [Code] -> [Code]-> [(Int, Code)]
