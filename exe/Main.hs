@@ -93,6 +93,7 @@ emoji (a,b) = replicate a (unicodeByName "black_circle") ++ replicate b (unicode
 
 -- print out a given list of emoji representing score
 showEmoji :: [Maybe String] -> IO ()
+showEmoji [] = putStrLn " "
 showEmoji (x:xs) = do
                    mapM_ putStr x
                    if length(xs) == 0 then putStrLn " "
