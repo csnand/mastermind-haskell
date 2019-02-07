@@ -87,9 +87,11 @@ takeTurns :: Player -> IO ()
 takeTurns Human    = humanTurn >> takeTurns Computer
 takeTurns Computer = compTurn  >> takeTurns Human
 
+-- list of black and white circles in emoji corespinding to score
 emoji :: Score -> [Maybe String] 
 emoji (a,b) = replicate a (unicodeByName "black_circle") ++ replicate b (unicodeByName "white_circle") 
 
+-- print out a given list of emoji representing score
 showEmoji :: [Maybe String] -> IO ()
 showEmoji (x:xs) = do
                    mapM_ putStr x
@@ -97,10 +99,11 @@ showEmoji (x:xs) = do
                    else showEmoji xs
 
 
-
+-- return the role choosed by the player
 chooseRole :: String -> Player
 chooseRole str = if str == "1" then Human else Computer
 
+-- prompt to player for choosing role
 getInput :: IO Player
 getInput = do 
            putStrLn "Please choose role (1 for codemaker, 2 for codebreaker)"
